@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quy đổi điểm V-SAT - CTUMP</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { text-align: center; color: #b71c1c; margin-bottom: 20px; text-transform: uppercase; font-size: 1.2rem; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
+        input { width: 100%; padding: 10px; border: 1.5px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; transition: border-color 0.3s; }
+        input:focus { border-color: #b71c1c; outline: none; }
+        button { width: 100%; padding: 12px; background: #b71c1c; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #8e1616; }
+        .result-box { margin-top: 20px; padding: 15px; border-radius: 8px; background: #fff8f8; border: 1px solid #ffcdd2; display: none; }
+        .res-item { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #ffcdd2; padding-bottom: 5px; }
+        .total-row { font-size: 1.3em; color: #b71c1c; font-weight: 800; text-align: center; margin-top: 15px; }
+        .note { font-size: 12px; color: #666; margin-top: 15px; font-style: italic; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Công cụ quy đổi điểm V-SAT CTUMP</h2>
+    <div class="input-group">
+        <label>Điểm Toán V-SAT:</label>
+        <input type="number" id="toan" placeholder="Ví dụ: 135" step="0.01">
+    </div>
+    <div class="input-group">
+        <label>Điểm Hóa học V-SAT:</label>
+        <input type="number" id="hoa" placeholder="Ví dụ: 110" step="0.01">
+    </div>
+    <div class="input-group">
+        <label>Điểm Sinh học V-SAT:</label>
+        <input type="number" id="sinh" placeholder="Ví dụ: 125" step="0.01">
+    </div>
+    <button onclick="calculate()">TÍNH ĐIỂM TƯƠNG ĐƯƠNG</button>
+
+    <div id="resultArea" class="result-box">
+        <div class="res-item"><span>Toán quy đổi:</span> <strong id="resToan">0</strong></div>
+        <div class="res-item"><span>Hóa quy đổi:</span> <strong id="resHoa">0</strong></div>
+        <div class="res-item"><span>Sinh quy đổi:</span> <strong id="resSinh">0</strong></div>
+        <div class="total-row">TỔNG ĐIỂM: <span id="resTotal">0</span></div>
+    </div>
+    <p class="note">*Dựa trên bảng quy đổi chính thức của ĐH Y Dược Cần Thơ</p>
+</div>
+
+<script>
+    // Dữ liệu chuẩn xác từ bảng phụ lục (a, b là V-SAT; c, d là THPT)
+    const tableData = {
+        toan: [
+            {a: 132, b: 150, c: 8.5, d: 10}, {a: 128.5, b: 132, c: 8.1, d: 8.5},
+            {a: 122.5, b: 128.5, c: 7.75, d: 8.1}, {a: 114.5, b: 122.5, c: 7.0, d: 7.75},
+            {a: 108, b: 114.5, c: 6.6, d: 7.0}, {a: 102.5, b: 108, c: 6.25, d: 6.6},
+            {a: 97, b: 102.5, c: 6.0, d: 6.25}, {a: 91, b: 97, c: 5.6, d: 6.0},
+            {a: 85, b: 91, c: 5.25, d: 5.6}, {a: 77, b: 85, c: 5.0, d: 5.25},
+            {a: 68, b: 77, c: 4.5, d: 5.0}, {a: 6, b: 68, c: 1.5, d: 4.5}
+        ],
+        hoa: [
+            {a: 129, b: 150, c: 9.5, d: 10}, {a: 124.5, b: 129, c: 9.25, d: 9.5},
+            {a: 117, b: 124.5, c: 8.75, d: 9.25}, {a: 107.5, b: 117, c: 8.25, d: 8.75},
+            {a: 100.5, b: 107.5, c: 7.75, d: 8.25}, {a: 94, b: 100.5, c: 7.25, d: 7.75},
+            {a: 88, b: 94, c: 6.75, d: 7.25}, {a: 81.5, b: 88, c: 6.25, d: 6.75},
+            {a: 75.5, b: 81.5, c: 5.75, d: 6.25}, {a: 68.5, b: 75.5, c: 5.25, d: 5.75},
+            {a: 59.5, b: 68.5, c: 4.6, d: 5.25}, {a: 20, b: 59.5, c: 1.35, d: 4.6}
+        ],
+        sinh: [
+            {a: 130.5, b: 150, c: 9.0, d: 9.75}, {a: 126.5, b: 130.5, c: 8.75, d: 9.0},
+            {a: 120.5, b: 126.5, c: 8.34, d: 8.75}, {a: 112.5, b: 120.5, c: 7.85, d: 8.34},
+            {a: 105.5, b: 112.5, c: 7.5, d: 7.85}, {a: 100, b: 105.5, c: 7.25, d: 7.5},
+            {a: 94.5, b: 100, c: 6.85, d: 7.25}, {a: 88.5, b: 94.5, c: 6.5, d: 6.85},
+            {a: 82.5, b: 88.5, c: 6.25, d: 6.5}, {a: 76, b: 82.5, c: 5.85, d: 6.25},
+            {a: 66.5, b: 76, c: 5.25, d: 5.85}, {a: 26.5, b: 66.5, c: 2.8, d: 5.25}
+        ]
+    };
+
+    function interpolate(x, ranges) {
+        if (isNaN(x) || x === null) return 0;
+        // Tìm khoảng chứa x: a < x <= b
+        const range = ranges.find(r => x > r.a && x <= r.b);
+        if (!range) {
+            // Xử lý trường hợp điểm tuyệt đối bằng biên dưới thấp nhất hoặc biên trên cao nhất
+            const minA = Math.min(...ranges.map(r => r.a));
+            const maxB = Math.max(...ranges.map(r => r.b));
+            if (x <= minA) return ranges[ranges.length - 1].c; 
+            if (x >= maxB) return ranges[0].d;
+            return 0;
+        }
+        // Công thức: y = c + ((x - a)/(b - a)) * (d - c)
+        let y = range.c + ((x - range.a) / (range.b - range.a)) * (range.d - range.c);
+        return parseFloat(y.toFixed(2));
+    }
+
+    function calculate() {
+        const toanVal = parseFloat(document.getElementById('toan').value);
+        const hoaVal = parseFloat(document.getElementById('hoa').value);
+        const sinhVal = parseFloat(document.getElementById('sinh').value);
+
+        const qdToan = interpolate(toanVal, tableData.toan);
+        const qdHoa = interpolate(hoaVal, tableData.hoa);
+        const qdSinh = interpolate(sinhVal, tableData.sinh);
+
+        document.getElementById('resToan').innerText = qdToan;
+        document.getElementById('resHoa').innerText = qdHoa;
+        document.getElementById('resSinh').innerText = qdSinh;
+        document.getElementById('resTotal').innerText = (qdToan + qdHoa + qdSinh).toFixed(2);
+        
+        document.getElementById('resultArea').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
