@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quy đổi điểm V-SAT - CTUMP</title>
     <style>
-    /* Tổng thể giao diện tối */
     body { 
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
         background-color: #121212; 
         color: #e0e0e0;
         display: flex; 
@@ -15,222 +14,200 @@
         align-items: center;
         min-height: 100vh;
         margin: 0;
-        padding: 20px; 
+        padding: 20px;
     }
 
     .container { 
         background: #1e1e1e; 
         padding: 30px; 
-        border-radius: 16px; 
+        border-radius: 20px; 
         box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
         width: 100%; 
         max-width: 400px; 
         border: 1px solid #333;
     }
 
-    h2 { 
-        text-align: center; 
-        color: #ff5252; 
-        margin-bottom: 25px; 
-        text-transform: uppercase; 
-        font-size: 1.3rem; 
-        letter-spacing: 1px;
-    }
+    h2 { text-align: center; color: #ff5252; margin-bottom: 25px; font-size: 1.1rem; text-transform: uppercase; }
 
     .input-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 500; color: #bbb; font-size: 14px; }
 
-    label { 
-        display: block; 
-        margin-bottom: 8px; 
-        font-weight: 500; 
-        color: #bbb; 
-        font-size: 14px;
-    }
-
-    /* Hiệu ứng cho ô nhập liệu */
     input { 
-        width: 100%; 
-        padding: 12px; 
-        border: 2px solid #333; 
-        border-radius: 8px; 
-        box-sizing: border-box; 
-        font-size: 16px; 
-        background-color: #2c2c2c;
-        color: #fff;
-        transition: all 0.3s ease; 
+        width: 100%; padding: 14px; border: 2px solid #333; border-radius: 12px; 
+        box-sizing: border-box; font-size: 16px; background-color: #2c2c2c; color: #fff;
     }
 
-    /* Khi nhấn vào hoặc đang gõ (Focus) */
-    input:focus { 
-        border-color: #ff5252; 
-        background-color: #333;
-        outline: none; 
-        box-shadow: 0 0 8px rgba(255, 82, 82, 0.3);
-        transform: translateY(-2px); /* Nhô nhẹ lên khi gõ */
-    }
-
-    /* Hiệu ứng nút bấm */
     button { 
-        width: 100%; 
-        padding: 14px; 
-        background: #b71c1c; 
-        color: white; 
-        border: none; 
-        border-radius: 8px; 
-        cursor: pointer; 
-        font-size: 16px; 
-        font-weight: bold; 
-        margin-top: 10px; 
-        transition: all 0.2s active;
-        box-shadow: 0 4px 0 #7f0000; /* Tạo khối cho nút */
+        width: 100%; padding: 16px; background: #b71c1c; color: white; border: none; 
+        border-radius: 14px; cursor: pointer; font-size: 16px; font-weight: bold; 
+        margin-top: 10px; transition: transform 0.1s ease;
+    }
+    button:active { transform: scale(0.96); }
+
+    /* Overlay và Pop-up */
+    .overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+        display: none; z-index: 10;
     }
 
-    button:hover { 
-        background: #d32f2f; 
-        transform: translateY(-1px);
-    }
-
-    /* Hiệu ứng khi nhấn giữ nút (Click/Touch) */
-    button:active { 
-        transform: translateY(3px); 
-        box-shadow: 0 1px 0 #7f0000;
-        background: #8e1616;
-    }
-
-    /* Khu vực kết quả */
     .result-box { 
-        margin-top: 25px; 
-        padding: 20px; 
-        border-radius: 12px; 
-        background: #252525; 
-        border: 1px solid #444; 
-        display: none; 
-        animation: fadeIn 0.5s ease; /* Hiệu ứng hiện ra mượt mà */
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+        width: 90%; max-width: 360px; background: #252525; padding: 25px; 
+        border-radius: 28px; border: 1px solid #444; z-index: 20;
+        display: none; opacity: 0; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+    .popup-show {
+        display: block;
+        animation: iosSpring 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
+    }
+
+    @keyframes iosSpring {
+        to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     }
 
     .res-item { 
-        display: flex; 
-        justify-content: space-between; 
-        margin-bottom: 12px; 
-        border-bottom: 1px solid #333; 
-        padding-bottom: 8px; 
-        font-size: 15px;
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 8px;
     }
 
-    .res-item strong { color: #ff8a80; }
+    .val-group { text-align: right; }
+    .val-main { color: #ff8a80; font-weight: bold; font-size: 1.1rem; }
+    .val-top { color: #777; font-size: 0.85rem; margin-left: 8px; }
 
     .total-row { 
-        font-size: 1.5em; 
-        color: #ff5252; 
-        font-weight: 800; 
-        text-align: center; 
-        margin-top: 15px; 
-        text-shadow: 0 0 10px rgba(255, 82, 82, 0.2);
+        font-size: 1.6em; color: #ff5252; font-weight: 900; 
+        text-align: center; margin-top: 20px; 
     }
 
-    .note { 
-        font-size: 11px; 
-        color: #777; 
-        margin-top: 20px; 
-        font-style: italic; 
-        text-align: center; 
-        line-height: 1.4;
+    .ref-note {
+        font-size: 12px; color: #888; text-align: center;
+        margin-top: 10px; line-height: 1.4; padding: 0 10px;
     }
+
+    .close-btn {
+        margin-top: 20px; background: #3a3a3c; color: white; border: none;
+        padding: 14px; border-radius: 16px; width: 100%; font-weight: 600; cursor: pointer;
+    }
+
+    .note-bottom { font-size: 11px; color: #555; margin-top: 20px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Công cụ quy đổi điểm V-SAT CTUMP</h2>
+    <h2>Quy đổi điểm V-SAT CTUMP</h2>
     <div class="input-group">
-        <label>Điểm Toán V-SAT:</label>
-        <input type="number" id="toan" placeholder="Ví dụ: 135" step="0.01">
+        <label>Toán V-SAT:</label>
+        <input type="number" id="toan" placeholder="Nhập điểm Toán..." step="0.01">
     </div>
     <div class="input-group">
-        <label>Điểm Hóa học V-SAT:</label>
-        <input type="number" id="hoa" placeholder="Ví dụ: 110" step="0.01">
+        <label>Hóa học V-SAT:</label>
+        <input type="number" id="hoa" placeholder="Nhập điểm Hóa..." step="0.01">
     </div>
     <div class="input-group">
-        <label>Điểm Sinh học V-SAT:</label>
-        <input type="number" id="sinh" placeholder="Ví dụ: 125" step="0.01">
+        <label>Sinh học V-SAT:</label>
+        <input type="number" id="sinh" placeholder="Nhập điểm Sinh..." step="0.01">
     </div>
-    <button onclick="calculate()">TÍNH ĐIỂM TƯƠNG ĐƯƠNG</button>
+    <button onclick="calculate()">TÍNH ĐIỂM NGAY</button>
+    <p class="note-bottom">Dựa trên Công văn số 1672/TB-ĐHYDCT ngày 22/07/2025</p>
+</div>
 
-    <div id="resultArea" class="result-box">
-        <div class="res-item"><span>Toán quy đổi:</span> <strong id="resToan">0</strong></div>
-        <div class="res-item"><span>Hóa quy đổi:</span> <strong id="resHoa">0</strong></div>
-        <div class="res-item"><span>Sinh quy đổi:</span> <strong id="resSinh">0</strong></div>
-        <div class="total-row">TỔNG ĐIỂM: <span id="resTotal">0</span></div>
+<div id="overlay" class="overlay" onclick="closePopup()"></div>
+<div id="resultArea" class="result-box">
+    <div class="res-item">
+        <span>Toán quy đổi:</span> 
+        <div class="val-group"><span class="val-main" id="resToan">0</span><span class="val-top" id="topToan"></span></div>
     </div>
-    <p class="note">*Dựa trên bảng quy đổi chính thức của ĐH Y Dược Cần Thơ</p>
+    <div class="res-item">
+        <span>Hóa quy đổi:</span> 
+        <div class="val-group"><span class="val-main" id="resHoa">0</span><span class="val-top" id="topHoa"></span></div>
+    </div>
+    <div class="res-item">
+        <span>Sinh quy đổi:</span> 
+        <div class="val-group"><span class="val-main" id="resSinh">0</span><span class="val-top" id="topSinh"></span></div>
+    </div>
+    
+    <div class="res-item" style="border-bottom: none; margin-top: 10px; color: #aaa; font-style: italic; font-size: 14px;">
+        <span>Tổng điểm V-SAT gốc:</span> <span id="resRawTotal" style="font-weight: bold;">0</span>
+    </div>
+    
+    <div class="total-row">TỔNG: <span id="resTotal">0</span></div>
+    
+    <div class="ref-note">Kết quả dựa trên phổ điểm năm 2025, mang tính chất tham khảo.</div>
+    
+    <button class="close-btn" onclick="closePopup()">Xong</button>
 </div>
 
 <script>
-    // Dữ liệu chuẩn xác từ bảng phụ lục (a, b là V-SAT; c, d là THPT)
     const tableData = {
         toan: [
-            {a: 132, b: 150, c: 8.5, d: 10}, {a: 128.5, b: 132, c: 8.1, d: 8.5},
-            {a: 122.5, b: 128.5, c: 7.75, d: 8.1}, {a: 114.5, b: 122.5, c: 7.0, d: 7.75},
-            {a: 108, b: 114.5, c: 6.6, d: 7.0}, {a: 102.5, b: 108, c: 6.25, d: 6.6},
-            {a: 97, b: 102.5, c: 6.0, d: 6.25}, {a: 91, b: 97, c: 5.6, d: 6.0},
-            {a: 85, b: 91, c: 5.25, d: 5.6}, {a: 77, b: 85, c: 5.0, d: 5.25},
-            {a: 68, b: 77, c: 4.5, d: 5.0}, {a: 6, b: 68, c: 1.5, d: 4.5}
+            {a: 132, b: 150, c: 8.5, d: 10, top: "3%"}, {a: 128.5, b: 132, c: 8.1, d: 8.5, top: "5%"},
+            {a: 122.5, b: 128.5, c: 7.75, d: 8.1, top: "10%"}, {a: 114.5, b: 122.5, c: 7.0, d: 7.75, top: "20%"},
+            {a: 108, b: 114.5, c: 6.6, d: 7.0, top: "30%"}, {a: 102.5, b: 108, c: 6.25, d: 6.6, top: "40%"},
+            {a: 97, b: 102.5, c: 6.0, d: 6.25, top: "50%"}, {a: 91, b: 97, c: 5.6, d: 6.0, top: "60%"},
+            {a: 85, b: 91, c: 5.25, d: 5.6, top: "70%"}, {a: 77, b: 85, c: 5.0, d: 5.25, top: "80%"},
+            {a: 68, b: 77, c: 4.5, d: 5.0, top: "90%"}, {a: 6, b: 68, c: 1.5, d: 4.5, top: "> 90%"}
         ],
         hoa: [
-            {a: 129, b: 150, c: 9.5, d: 10}, {a: 124.5, b: 129, c: 9.25, d: 9.5},
-            {a: 117, b: 124.5, c: 8.75, d: 9.25}, {a: 107.5, b: 117, c: 8.25, d: 8.75},
-            {a: 100.5, b: 107.5, c: 7.75, d: 8.25}, {a: 94, b: 100.5, c: 7.25, d: 7.75},
-            {a: 88, b: 94, c: 6.75, d: 7.25}, {a: 81.5, b: 88, c: 6.25, d: 6.75},
-            {a: 75.5, b: 81.5, c: 5.75, d: 6.25}, {a: 68.5, b: 75.5, c: 5.25, d: 5.75},
-            {a: 59.5, b: 68.5, c: 4.6, d: 5.25}, {a: 20, b: 59.5, c: 1.35, d: 4.6}
+            {a: 129, b: 150, c: 9.5, d: 10, top: "3%"}, {a: 124.5, b: 129, c: 9.25, d: 9.5, top: "5%"},
+            {a: 117, b: 124.5, c: 8.75, d: 9.25, top: "10%"}, {a: 107.5, b: 117, c: 8.25, d: 8.75, top: "20%"},
+            {a: 100.5, b: 107.5, c: 7.75, d: 8.25, top: "30%"}, {a: 94, b: 100.5, c: 7.25, d: 7.75, top: "40%"},
+            {a: 88, b: 94, c: 6.75, d: 7.25, top: "50%"}, {a: 81.5, b: 88, c: 6.25, d: 6.75, top: "60%"},
+            {a: 75.5, b: 81.5, c: 5.75, d: 6.25, top: "70%"}, {a: 68.5, b: 75.5, c: 5.25, d: 5.75, top: "80%"},
+            {a: 59.5, b: 68.5, c: 4.6, d: 5.25, top: "90%"}, {a: 20, b: 59.5, c: 1.35, d: 4.6, top: "> 90%"}
         ],
         sinh: [
-            {a: 130.5, b: 150, c: 9.0, d: 9.75}, {a: 126.5, b: 130.5, c: 8.75, d: 9.0},
-            {a: 120.5, b: 126.5, c: 8.34, d: 8.75}, {a: 112.5, b: 120.5, c: 7.85, d: 8.34},
-            {a: 105.5, b: 112.5, c: 7.5, d: 7.85}, {a: 100, b: 105.5, c: 7.25, d: 7.5},
-            {a: 94.5, b: 100, c: 6.85, d: 7.25}, {a: 88.5, b: 94.5, c: 6.5, d: 6.85},
-            {a: 82.5, b: 88.5, c: 6.25, d: 6.5}, {a: 76, b: 82.5, c: 5.85, d: 6.25},
-            {a: 66.5, b: 76, c: 5.25, d: 5.85}, {a: 26.5, b: 66.5, c: 2.8, d: 5.25}
+            {a: 130.5, b: 150, c: 9.0, d: 9.75, top: "3%"}, {a: 126.5, b: 130.5, c: 8.75, d: 9.0, top: "5%"},
+            {a: 120.5, b: 126.5, c: 8.34, d: 8.75, top: "10%"}, {a: 112.5, b: 120.5, c: 7.85, d: 8.34, top: "20%"},
+            {a: 105.5, b: 112.5, c: 7.5, d: 7.85, top: "30%"}, {a: 100, b: 105.5, c: 7.25, d: 7.5, top: "40%"},
+            {a: 94.5, b: 100, c: 6.85, d: 7.25, top: "50%"}, {a: 88.5, b: 94.5, c: 6.5, d: 6.85, top: "60%"},
+            {a: 82.5, b: 88.5, c: 6.25, d: 6.5, top: "70%"}, {a: 76, b: 82.5, c: 5.85, d: 6.25, top: "80%"},
+            {a: 66.5, b: 76, c: 5.25, d: 5.85, top: "90%"}, {a: 26.5, b: 66.5, c: 2.8, d: 5.25, top: "> 90%"}
         ]
     };
 
-    function interpolate(x, ranges) {
-        if (isNaN(x) || x === null) return 0;
-        // Tìm khoảng chứa x: a < x <= b
+    function getConversion(x, ranges) {
+        if (isNaN(x) || x === null) return { y: 0, top: "" };
         const range = ranges.find(r => x > r.a && x <= r.b);
         if (!range) {
-            // Xử lý trường hợp điểm tuyệt đối bằng biên dưới thấp nhất hoặc biên trên cao nhất
             const minA = Math.min(...ranges.map(r => r.a));
             const maxB = Math.max(...ranges.map(r => r.b));
-            if (x <= minA) return ranges[ranges.length - 1].c; 
-            if (x >= maxB) return ranges[0].d;
-            return 0;
+            if (x <= minA) return { y: ranges[ranges.length - 1].c, top: ranges[ranges.length - 1].top }; 
+            if (x >= maxB) return { y: ranges[0].d, top: ranges[0].top };
+            return { y: 0, top: "" };
         }
-        // Công thức: y = c + ((x - a)/(b - a)) * (d - c)
         let y = range.c + ((x - range.a) / (range.b - range.a)) * (range.d - range.c);
-        return parseFloat(y.toFixed(2));
+        return { y: parseFloat(y.toFixed(2)), top: range.top };
     }
 
     function calculate() {
-        const toanVal = parseFloat(document.getElementById('toan').value);
-        const hoaVal = parseFloat(document.getElementById('hoa').value);
-        const sinhVal = parseFloat(document.getElementById('sinh').value);
+        const t = parseFloat(document.getElementById('toan').value) || 0;
+        const h = parseFloat(document.getElementById('hoa').value) || 0;
+        const s = parseFloat(document.getElementById('sinh').value) || 0;
 
-        const qdToan = interpolate(toanVal, tableData.toan);
-        const qdHoa = interpolate(hoaVal, tableData.hoa);
-        const qdSinh = interpolate(sinhVal, tableData.sinh);
+        const resT = getConversion(t, tableData.toan);
+        const resH = getConversion(h, tableData.hoa);
+        const resS = getConversion(s, tableData.sinh);
 
-        document.getElementById('resToan').innerText = qdToan;
-        document.getElementById('resHoa').innerText = qdHoa;
-        document.getElementById('resSinh').innerText = qdSinh;
-        document.getElementById('resTotal').innerText = (qdToan + qdHoa + qdSinh).toFixed(2);
+        document.getElementById('resToan').innerText = resT.y;
+        document.getElementById('topToan').innerText = "(Top " + resT.top + ")";
+        document.getElementById('resHoa').innerText = resH.y;
+        document.getElementById('topHoa').innerText = "(Top " + resH.top + ")";
+        document.getElementById('resSinh').innerText = resS.y;
+        document.getElementById('topSinh').innerText = "(Top " + resS.top + ")";
+
+        document.getElementById('resRawTotal').innerText = (t + h + s).toFixed(2);
+        document.getElementById('resTotal').innerText = (resT.y + resH.y + resS.y).toFixed(2);
         
-        document.getElementById('resultArea').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('resultArea').classList.add('popup-show');
+    }
+
+    function closePopup() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('resultArea').classList.remove('popup-show');
     }
 </script>
 
