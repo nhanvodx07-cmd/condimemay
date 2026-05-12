@@ -15,6 +15,7 @@
         min-height: 100vh;
         margin: 0;
         padding: 20px;
+        overflow-x: hidden;
     }
 
     .container { 
@@ -35,6 +36,21 @@
     input { 
         width: 100%; padding: 14px; border: 2px solid #333; border-radius: 12px; 
         box-sizing: border-box; font-size: 16px; background-color: #2c2c2c; color: #fff;
+        outline: none;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    input:focus { 
+        border-color: #ff5252; 
+        transform: scale(1.03); 
+        box-shadow: 0 0 15px rgba(255, 82, 82, 0.4); 
+    }
+
+    /* Tùy chỉnh nút tăng giảm (spinner) để trông to và dễ bấm hơn */
+    input::-webkit-inner-spin-button, 
+    input::-webkit-outer-spin-button { 
+        opacity: 1;
+        height: 30px;
     }
 
     button { 
@@ -44,11 +60,11 @@
     }
     button:active { transform: scale(0.96); }
 
-    /* Overlay và Pop-up */
     .overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
-        display: none; z-index: 10;
+        display: none; z-index: 10; opacity: 0;
+        transition: opacity 0.3s ease;
     }
 
     .result-box { 
@@ -59,12 +75,22 @@
     }
 
     .popup-show {
-        display: block;
-        animation: iosSpring 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
+        display: block !important;
+        animation: iosOpen 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
     }
 
-    @keyframes iosSpring {
+    .popup-hide {
+        animation: iosClose 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes iosOpen {
+        from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
         to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    @keyframes iosClose {
+        from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        to { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
     }
 
     .res-item { 
@@ -76,15 +102,8 @@
     .val-main { color: #ff8a80; font-weight: bold; font-size: 1.1rem; }
     .val-top { color: #777; font-size: 0.85rem; margin-left: 8px; }
 
-    .total-row { 
-        font-size: 1.6em; color: #ff5252; font-weight: 900; 
-        text-align: center; margin-top: 20px; 
-    }
-
-    .ref-note {
-        font-size: 12px; color: #888; text-align: center;
-        margin-top: 10px; line-height: 1.4; padding: 0 10px;
-    }
+    .total-row { font-size: 1.6em; color: #ff5252; font-weight: 900; text-align: center; margin-top: 20px; }
+    .ref-note { font-size: 12px; color: #888; text-align: center; margin-top: 10px; line-height: 1.4; padding: 0 10px; }
 
     .close-btn {
         margin-top: 20px; background: #3a3a3c; color: white; border: none;
@@ -99,16 +118,16 @@
 <div class="container">
     <h2>Quy đổi điểm V-SAT CTUMP</h2>
     <div class="input-group">
-        <label>Toán V-SAT:</label>
-        <input type="number" id="toan" placeholder="Nhập điểm Toán..." step="0.01">
+        <label>Toán V-SAT (0-150):</label>
+        <input type="number" id="toan" placeholder="Nhập số nguyên..." step="1" min="0" max="150" oninput="this.value=Math.round(this.value)">
     </div>
     <div class="input-group">
-        <label>Hóa học V-SAT:</label>
-        <input type="number" id="hoa" placeholder="Nhập điểm Hóa..." step="0.01">
+        <label>Hóa học V-SAT (0-150):</label>
+        <input type="number" id="hoa" placeholder="Nhập số nguyên..." step="1" min="0" max="150" oninput="this.value=Math.round(this.value)">
     </div>
     <div class="input-group">
-        <label>Sinh học V-SAT:</label>
-        <input type="number" id="sinh" placeholder="Nhập điểm Sinh..." step="0.01">
+        <label>Sinh học V-SAT (0-150):</label>
+        <input type="number" id="sinh" placeholder="Nhập số nguyên..." step="1" min="0" max="150" oninput="this.value=Math.round(this.value)">
     </div>
     <button onclick="calculate()">TÍNH ĐIỂM NGAY</button>
     <p class="note-bottom">Dựa trên Công văn số 1672/TB-ĐHYDCT ngày 22/07/2025</p>
@@ -134,9 +153,7 @@
     </div>
     
     <div class="total-row">TỔNG: <span id="resTotal">0</span></div>
-    
     <div class="ref-note">Kết quả dựa trên phổ điểm năm 2025, mang tính chất tham khảo.</div>
-    
     <button class="close-btn" onclick="closePopup()">Xong</button>
 </div>
 
@@ -169,23 +186,33 @@
     };
 
     function getConversion(x, ranges) {
-        if (isNaN(x) || x === null) return { y: 0, top: "" };
+        if (x <= 0) return { y: 0, top: "100%" };
+        if (x > 150) x = 150;
+        
         const range = ranges.find(r => x > r.a && x <= r.b);
         if (!range) {
-            const minA = Math.min(...ranges.map(r => r.a));
             const maxB = Math.max(...ranges.map(r => r.b));
-            if (x <= minA) return { y: ranges[ranges.length - 1].c, top: ranges[ranges.length - 1].top }; 
             if (x >= maxB) return { y: ranges[0].d, top: ranges[0].top };
-            return { y: 0, top: "" };
+            return { y: ranges[ranges.length - 1].c, top: ranges[ranges.length - 1].top };
         }
         let y = range.c + ((x - range.a) / (range.b - range.a)) * (range.d - range.c);
         return { y: parseFloat(y.toFixed(2)), top: range.top };
     }
 
     function calculate() {
-        const t = parseFloat(document.getElementById('toan').value) || 0;
-        const h = parseFloat(document.getElementById('hoa').value) || 0;
-        const s = parseFloat(document.getElementById('sinh').value) || 0;
+        const ids = ['toan', 'hoa', 'sinh'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            // Làm tròn số nguyên ngay khi tính
+            let val = el.value === "" ? 0 : Math.round(parseFloat(el.value));
+            if (val < 0) val = 0;
+            if (val > 150) val = 150;
+            el.value = val;
+        });
+
+        const t = parseInt(document.getElementById('toan').value);
+        const h = parseInt(document.getElementById('hoa').value);
+        const s = parseInt(document.getElementById('sinh').value);
 
         const resT = getConversion(t, tableData.toan);
         const resH = getConversion(h, tableData.hoa);
@@ -198,16 +225,33 @@
         document.getElementById('resSinh').innerText = resS.y;
         document.getElementById('topSinh').innerText = "(Top " + resS.top + ")";
 
-        document.getElementById('resRawTotal').innerText = (t + h + s).toFixed(2);
+        document.getElementById('resRawTotal').innerText = (t + h + s);
         document.getElementById('resTotal').innerText = (resT.y + resH.y + resS.y).toFixed(2);
         
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('resultArea').classList.add('popup-show');
+        const ovl = document.getElementById('overlay');
+        const box = document.getElementById('resultArea');
+        ovl.style.display = 'block';
+        box.style.display = 'block'; 
+        box.classList.remove('popup-hide');
+        setTimeout(() => {
+            ovl.style.opacity = '1';
+            box.classList.add('popup-show');
+        }, 10);
     }
 
     function closePopup() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('resultArea').classList.remove('popup-show');
+        const ovl = document.getElementById('overlay');
+        const box = document.getElementById('resultArea');
+        ovl.style.opacity = '0';
+        box.classList.remove('popup-show');
+        box.classList.add('popup-hide');
+        setTimeout(() => {
+            if (box.classList.contains('popup-hide')) {
+                ovl.style.display = 'none';
+                box.style.display = 'none';
+                box.classList.remove('popup-hide');
+            }
+        }, 300);
     }
 </script>
 
