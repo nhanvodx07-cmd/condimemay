@@ -25,6 +25,17 @@ const tableData = {
     ]
 };
 
+function validateInput(val) {
+    if (val === "" || isNaN(val)) return 0;
+    let num = parseFloat(val);
+    if (num < 0) num = 0;
+    if (num > 150) num = 150;
+    
+    // Logic: Nếu phần thập phân không phải .0 hoặc .5, làm tròn về .5 gần nhất
+    // Nhân 2, làm tròn, chia 2 sẽ đưa về các nấc 0.5 (vd: 120.3 -> 120.5; 120.2 -> 120.0)
+    return Math.round(num * 2) / 2;
+}
+
 function getConversion(x, ranges) {
     if (x <= 0) return { y: 0, top: "100%" };
     if (x > 150) x = 150;
@@ -41,21 +52,18 @@ function getConversion(x, ranges) {
 
 function calculate() {
     const ids = ['toan', 'hoa', 'sinh'];
+    const values = {};
+
     ids.forEach(id => {
         const el = document.getElementById(id);
-        let val = el.value === "" ? 0 : Math.round(parseFloat(el.value));
-        if (val < 0) val = 0;
-        if (val > 150) val = 150;
-        el.value = val;
+        const validatedVal = validateInput(el.value);
+        el.value = validatedVal; // Cập nhật lại ô input để người dùng thấy số đã chuẩn hóa
+        values[id] = validatedVal;
     });
 
-    const t = parseInt(document.getElementById('toan').value);
-    const h = parseInt(document.getElementById('hoa').value);
-    const s = parseInt(document.getElementById('sinh').value);
-
-    const resT = getConversion(t, tableData.toan);
-    const resH = getConversion(h, tableData.hoa);
-    const resS = getConversion(s, tableData.sinh);
+    const resT = getConversion(values.toan, tableData.toan);
+    const resH = getConversion(values.hoa, tableData.hoa);
+    const resS = getConversion(values.sinh, tableData.sinh);
 
     document.getElementById('resToan').innerText = resT.y;
     document.getElementById('topToan').innerText = "(Top " + resT.top + ")";
@@ -64,7 +72,7 @@ function calculate() {
     document.getElementById('resSinh').innerText = resS.y;
     document.getElementById('topSinh').innerText = "(Top " + resS.top + ")";
 
-    document.getElementById('resRawTotal').innerText = (t + h + s);
+    document.getElementById('resRawTotal').innerText = (values.toan + values.hoa + values.sinh);
     document.getElementById('resTotal').innerText = (resT.y + resH.y + resS.y).toFixed(2);
     
     const ovl = document.getElementById('overlay');
