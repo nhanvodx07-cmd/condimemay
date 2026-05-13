@@ -13,15 +13,15 @@
     <h2>Quy đổi điểm V-SAT CTUMP</h2>
     <div class="input-group">
         <label>Toán V-SAT (0-150):</label>
-        <input type="number" id="toan" placeholder="Nhập số nguyên..." step="1" min="0" max="150" oninput="this.value=Math.round(this.value)">
+        <input type="number" id="toan" placeholder="Ví dụ: 120 hoặc 120.5" step="0.5" min="0" max="150">
     </div>
     <div class="input-group">
         <label>Hóa học V-SAT (0-150):</label>
-        <input type="number" id="hoa" placeholder="Nhập số nguyên..." step="1" min="0" max="150" oninput="this.value=Math.round(this.value)">
+        <input type="number" id="hoa" placeholder="Ví dụ: 120 hoặc 120.5" step="0.5" min="0" max="150">
     </div>
     <div class="input-group">
         <label>Sinh học V-SAT (0-150):</label>
-        <input type="number" id="sinh" placeholder="Nhập số nguyên..." step="1" min="0" max="150" oninput="this.value=Math.round(this.value)">
+        <input type="number" id="sinh" placeholder="Ví dụ: 120 hoặc 120.5" step="0.5" min="0" max="150">
     </div>
     <button onclick="calculate()">TÍNH ĐIỂM NGAY</button>
     <p class="note-bottom"> <a href="https://media.ctump.edu.vn//Media//1_TH1076//FolderFunc//202507//Documents/yct-tb-nguong-dau-vao-va-quy-doi-diem-chinh-quy-2025-227-20250722074724-e.pdf#toolbar=0" target="_blank" >Dựa trên Công văn số 1672/TB-ĐHYDCT ngày 22/07/2025 </a></p>
@@ -62,9 +62,6 @@
 </div>
 
 <script src="script.js"></script>
-
-
-
 
 </body>
 </html>
