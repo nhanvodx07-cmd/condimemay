@@ -39,6 +39,7 @@ input:focus {
     box-shadow: 0 0 15px rgba(255, 82, 82, 0.4); 
 }
 
+/* Hiển thị nút tăng giảm để dễ chọn bước 0.5 */
 input::-webkit-inner-spin-button, 
 input::-webkit-outer-spin-button { 
     opacity: 1;
@@ -104,3 +105,6 @@ button:active { transform: scale(0.96); }
 }
 
 .note-bottom { font-size: 11px; color: #555; margin-top: 20px; text-align: center; }
+
+.note-bottom a { color: #777; text-decoration: none; }
+.note-bottom a:hover { text-decoration: underline; }
