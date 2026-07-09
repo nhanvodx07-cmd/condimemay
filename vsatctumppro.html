@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CTUMP V-SAT Calculator</title>
+    <style>
+        /* Cấu hình màu sắc dạng biến để xử lý Dark Mode */
+        :root {
+            --ctump-blue: #323b98;
+            --ctump-red: #d92128;
+            --bg: #f2f2f7;
+            --card-bg: #ffffff;
+            --text: #1c1c1e;
+            --text-muted: #8e8e93;
+            --radius: 20px;
+            --border-color: #e5e5ea;
+            --input-bg: #fcfcfc;
+            --highlight-bg: #f4f5fa;
+            --major-item-bg: #fafafa;
+        }
+
+        /* Khi kích hoạt chế độ tối */
+        [data-theme="dark"] {
+            --bg: #1c1c1e;
+            --card-bg: #2c2c2e;
+            --text: #f2f2f7;
+            --text-muted: #aeaea3;
+            --border-color: #3a3a3c;
+            --input-bg: #1c1c1e;
+            --highlight-bg: #3a3a3c;
+            --major-item-bg: #2c2c2e;
+        }
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Khung công tắc Dark Mode phong cách iOS */
+        .theme-switch-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 51px;
+            height: 31px;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e5e5ea;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 27px;
+            width: 27px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        input:checked + .slider {
+            background-color: #34c759; /* Màu xanh lá chuẩn công tắc iOS */
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .header h1 {
+            color: var(--ctump-blue);
+            margin: 0 0 5px 0;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        [data-theme="dark"] .header h1 {
+            color: #5d67d4; /* Sáng màu xanh lên tí ở chế độ tối để dễ đọc */
+        }
+
+        .header p {
+            color: var(--ctump-red);
+            margin: 0;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: var(--ctump-blue);
+        }
+        [data-theme="dark"] .input-group label {
+            color: #8a93ff;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border-color);
+            background: var(--input-bg);
+            font-size: 16px;
+            font-family: inherit;
+            color: var(--text);
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .input-group input:focus {
+            border-color: var(--ctump-blue);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 4px rgba(50, 59, 152, 0.15);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--ctump-blue), #4a54b5);
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(50, 59, 152, 0.3);
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 2px 10px rgba(50, 59, 152, 0.2);
+        }
+
+        .results-card {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .results-card.show {
+            display: block;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .section-title {
+            color: var(--ctump-red);
+            font-size: 18px;
+            font-weight: 700;
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            font-size: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .result-row:last-child { border-bottom: none; }
+        .result-row .label { color: var(--text-muted); font-weight: 500; }
+        .result-row .value { font-weight: 600; color: var(--text); }
+
+        .highlight-row {
+            background: var(--highlight-bg);
+            margin: 10px -10px;
+            padding: 14px 10px;
+            border-radius: 12px;
+            border-bottom: none;
+        }
+        
+        .highlight-row .label { color: var(--ctump-blue); font-weight: 600; }
+        [data-theme="dark"] .highlight-row .label { color: #8a93ff; }
+        .highlight-row .value { color: var(--ctump-red); font-size: 18px; font-weight: 700; }
+
+        .final-row {
+            background: rgba(50, 59, 152, 0.12);
+            margin: 16px -10px 0 -10px;
+            padding: 16px 10px;
+            border-radius: 14px;
+        }
+        .final-row .label { color: var(--ctump-blue); font-weight: 700; font-size: 16px; }
+        [data-theme="dark"] .final-row .label { color: #8a93ff; }
+        .final-row .value { color: var(--ctump-blue); font-size: 22px; font-weight: 800; }
+        [data-theme="dark"] .final-row .value { color: #8a93ff; }
+
+        .majors-list {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .major-item {
+            background: var(--major-item-bg);
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            border: 1.5px solid var(--border-color);
+            transition: transform 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .major-item:active {
+            transform: scale(0.98);
+        }
+
+        .major-item.positive {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+        [data-theme="dark"] .major-item.positive {
+            background: #14321a;
+            border-color: #166534;
+            color: #4ade80;
+        }
+
+        .major-item.negative {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+        [data-theme="dark"] .major-item.negative {
+            background: #3b1818;
+            border-color: #7f1d1d;
+            color: #f87171;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Nút gạt đổi Dark Mode -->
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider"></div>
+        </label>
+    </div>
+
+    <div class="header">
+        <h1>Tính Điểm CTUMP</h1>
+        <p>Quy đổi V-SAT sang thang 30</p>
+    </div>
+
+    <div class="card">
+        <div class="input-group">
+            <label for="math">Điểm V-SAT Toán</label>
+            <input type="number" id="math" step="0.01" placeholder="Nhập điểm Toán (VD: 135)">
+        </div>
+        <div class="input-group">
+            <label for="chem">Điểm V-SAT Hoá</label>
+            <input type="number" id="chem" step="0.01" placeholder="Nhập điểm Hoá (VD: 124.5)">
+        </div>
+        <div class="input-group">
+            <label for="bio">Điểm V-SAT Sinh</label>
+            <input type="number" id="bio" step="0.01" placeholder="Nhập điểm Sinh (VD: 120.5)">
+        </div>
+        <div class="input-group">
+            <label for="prio">Điểm ưu tiên (Tổng tối đa)</label>
+            <input type="number" id="prio" step="0.01" placeholder="Nhập điểm ưu tiên (VD: 0.75)">
+        </div>
+        <button class="btn" onclick="calculate()">Tính Điểm Quy Đổi</button>
+    </div>
+
+    <div class="results-card card" id="results">
+        <h2 class="section-title">Kết quả chi tiết</h2>
+        
+        <div class="result-row"><span class="label">Điểm V-SAT Toán gốc:</span> <span class="value" id="r-math-raw">0</span></div>
+        <div class="result-row"><span class="label">Điểm V-SAT Hoá gốc:</span> <span class="value" id="r-chem-raw">0</span></div>
+        <div class="result-row"><span class="label">Điểm V-SAT Sinh gốc:</span> <span class="value" id="r-bio-raw">0</span></div>
+        <div class="result-row highlight-row"><span class="label">Tổng điểm V-SAT gốc:</span> <span class="value" id="r-total-raw">0</span></div>
+
+        <div class="result-row" style="margin-top: 10px;"><span class="label">Điểm quy đổi Toán:</span> <span class="value" id="r-math-conv">0</span></div>
+        <div class="result-row"><span class="label">Điểm quy đổi Hoá:</span> <span class="value" id="r-chem-conv">0</span></div>
+        <div class="result-row"><span class="label">Điểm quy đổi Sinh:</span> <span class="value" id="r-bio-conv">0</span></div>
+        <div class="result-row highlight-row"><span class="label">Điểm tổng ba môn sau quy đổi:</span> <span class="value" id="r-total-conv">0</span></div>
+
+        <div class="result-row" style="margin-top: 10px;"><span class="label">Điểm ưu tiên áp dụng:</span> <span class="value" id="r-prio">0</span></div>
+        <div class="result-row final-row">
+            <span class="label">Điểm xét tuyển cuối cùng:</span> 
+            <span class="value" id="r-final">0</span>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 32px;">Khoảng cách điểm chuẩn năm ngoái</h2>
+        <div class="majors-list" id="majors-list"></div>
+    </div>
+</div>
+
+<script>
+    // Xử lý logic Dark Mode qua công tắc và hệ thống
+    const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+    const currentTheme = localStorage.getItem('theme');
+
+    // Kiểm tra cài đặt cũ hoặc hệ thống
+    if (currentTheme) {
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        if (currentTheme === 'dark') {
+            toggleSwitch.checked = true;
+        }
+    } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            toggleSwitch.checked = true;
+        }
+    }
+
+    function switchTheme(e) {
+        if (e.target.checked) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
+        }    
+    }
+    toggleSwitch.addEventListener('change', switchTheme, false);
+
+
+    // CẬP NHẬT BẢNG QUY ĐỔI MỚI THEO TÀI LIỆU 2026
+    const math_table = [
+        [144, 150, 9.5, 10],
+        [140.5, 144, 9.5, 9.5],
+        [136.5, 140.5, 9, 9.5],
+        [129.5, 136.5, 9, 9],
+        [122.5, 129.5, 8.5, 9],
+        [113, 122.5, 8.25, 8.5],
+        [105.5, 113, 7.75, 8.25],
+        [98.5, 105.5, 7.5, 7.75],
+        [92.5, 98.5, 7.25, 7.5],
+        [86, 92.5, 6.75, 7.25],
+        [79, 86, 6.25, 6.75],
+        [71.5, 79, 5.75, 6.25],
+        [61, 71.5, 5, 5.75],
+        [0, 61, 0, 5]
+    ];
+
+    const chem_table = [
+        [140, 150, 9.5, 10],
+        [136.5, 140, 9.25, 9.5],
+        [132, 136.5, 9.25, 9.25],
+        [125, 132, 8.75, 9.25],
+        [117, 125, 8.5, 8.75],
+        [107, 117, 8, 8.5],
+        [99, 107, 7.75, 8],
+        [92.5, 99, 7.35, 7.75],
+        [86, 92.5, 7, 7.35],
+        [80, 86, 6.6, 7],
+        [73, 80, 6.1, 6.6],
+        [66, 73, 5.5, 6.1],
+        [57, 66, 4.75, 5.5],
+        [0, 57, 0, 4.75]
+    ];
+
+    const bio_table = [
+        [138, 150, 9.75, 10],
+        [135, 138, 9.5, 9.75],
+        [131, 135, 9.25, 9.5],
+        [125, 131, 8.75, 9.25],
+        [118.5, 125, 8.25, 8.75],
+        [109, 118.5, 7.75, 8.25],
+        [102, 109, 7.25, 7.75],
+        [96, 102, 6.85, 7.25],
+        [90.25, 96, 6.5, 6.85],
+        [84, 90.25, 6.1, 6.5],
+        [78, 84, 5.75, 6.1],
+        [71, 78, 5.35, 5.75],
+        [62, 71, 4.75, 5.35],
+        [0, 62, 0, 4.75]
+    ];
+
+    const majors = [
+        { name: "Y khoa", score: 23.88 },
+        { name: "Răng hàm mặt", score: 23.35 },
+        { name: "Dược học", score: 20.80 },
+        { name: "Y học cổ truyền", score: 19.50 },
+        { name: "Kỹ thuật Xét nghiệm y học", score: 19.40 },
+        { name: "Kỹ thuật Hình ảnh y học", score: 18.88 },
+        { name: "Kỹ thuật Y sinh", score: 18.85 },
+        { name: "Điều dưỡng", score: 18.60 },
+        { name: "Y học dự phòng", score: 17.00 },
+        { name: "Hộ sinh", score: 17.00 },
+        { name: "Dinh dưỡng", score: 17.00 },
+        { name: "Y tế công cộng", score: 17.00 }
+    ];
+
+    majors.sort((a, b) => b.score - a.score);
+
+    function round2(num) {
+        return Math.round((num + Number.EPSILON) * 100) / 100;
+    }
+
+    function formatNum(num) {
+        return num.toFixed(2).replace('.', ',');
+    }
+
+    function convert(x, table) {
+        for (let i = 0; i < table.length; i++) {
+            let [a, b, c, d] = table[i];
+            if (x > a && x <= b) {
+                return c + ((x - a) / (b - a)) * (d - c);
+            }
+        }
+        if (x > table[0][1]) return table[0][3];
+        return table[table.length - 1][2];
+    }
+
+    function calculate() {
+        let m = parseFloat(document.getElementById('math').value);
+        let c = parseFloat(document.getElementById('chem').value);
+        let b = parseFloat(document.getElementById('bio').value);
+        let p = parseFloat(document.getElementById('prio').value) || 0;
+
+        if (isNaN(m) || isNaN(c) || isNaN(b)) {
+            alert('Vui lòng nhập đầy đủ điểm V-SAT gốc của 3 môn Toán, Hoá, Sinh.');
+            return;
+        }
+
+        let mConv = round2(convert(m, math_table));
+        let cConv = round2(convert(c, chem_table));
+        let bConv = round2(convert(b, bio_table));
+
+        let totalConv = round2(mConv + cConv + bConv);
+
+        let pFinal = 0;
+        if (totalConv < 22.5) {
+            pFinal = p;
+        } else {
+            pFinal = ((30 - totalConv) / 7.5) * p;
+        }
+        pFinal = round2(pFinal);
+
+        let finalScore = round2(totalConv + pFinal);
+
+        document.getElementById('r-math-raw').innerText = m;
+        document.getElementById('r-chem-raw').innerText = c;
+        document.getElementById('r-bio-raw').innerText = b;
+        document.getElementById('r-total-raw').innerText = round2(m + c + b);
+
+        document.getElementById('r-math-conv').innerText = formatNum(mConv);
+        document.getElementById('r-chem-conv').innerText = formatNum(cConv);
+        document.getElementById('r-bio-conv').innerText = formatNum(bConv);
+        document.getElementById('r-total-conv').innerText = formatNum(totalConv);
+
+        document.getElementById('r-prio').innerText = formatNum(pFinal);
+        document.getElementById('r-final').innerText = formatNum(finalScore);
+
+        let ml = document.getElementById('majors-list');
+        ml.innerHTML = '';
+        majors.forEach(mj => {
+            let diff = round2(finalScore - mj.score);
+            let diffStr = diff >= 0 ? formatNum(diff) : "-" + formatNum(Math.abs(diff));
+            let cls = diff >= 0 ? "positive" : "negative";
+            
+            let html = `<div class="major-item ${cls}">
+                Ngành: ${mj.name} ( chênh lệch ${diffStr} điểm ( ${formatNum(mj.score)} )
+            </div>`;
+            ml.insertAdjacentHTML('beforeend', html);
+        });
+
+        let resCard = document.getElementById('results');
+        resCard.classList.remove('show');
+        void resCard.offsetWidth; 
+        resCard.classList.add('show');
+    }
+</script>
+</body>
+</html>
